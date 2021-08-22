@@ -19,9 +19,8 @@ class RandNormMat{
   Eigen::MatrixXd CreateMatrix();
 
   Eigen::MatrixXd matrix;
-
- private:
-  int num_rows_, num_cols_;
+  
+  int num_rows, num_cols;
 
 };
 
