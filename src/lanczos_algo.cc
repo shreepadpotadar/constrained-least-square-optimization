@@ -1,4 +1,4 @@
-#include "include/Lanczos.h"
+#include "lanczos_algo.h"
 
 
 Lanczos::Lanczos(const Eigen::MatrixXd &A, const Eigen::VectorXd b)

@@ -1,6 +1,6 @@
 //#include "stdafx.h"
 #include <fstream>
-#include "include/LagMultEstimator.h"
+#include "lag_mult_estimator.h"
 
 LagMultEstimator::LagMultEstimator( const Eigen::MatrixXd &U, const double s, const double atb )
 {

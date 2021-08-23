@@ -1,4 +1,4 @@
-#include "include/RandNormMatrix.h"
+#include "rand_norm_matrix.h"
 
 
 RandNormMat::RandNormMat(int r, int c)

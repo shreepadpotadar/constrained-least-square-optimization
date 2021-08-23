@@ -3,9 +3,9 @@
 #include <iomanip>
 #include <string.h>
 
-#include "include/Lanczos.h"
-#include "include/RandNormMatrix.h"
-#include "include/LagMultEstimator.h"
+#include "lanczos_algo.h"
+#include "rand_norm_matrix.h"
+#include "lag_mult_estimator.h"
 
 
 int main(int, char**)
