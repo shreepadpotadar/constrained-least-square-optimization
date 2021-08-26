@@ -2,7 +2,7 @@ IDIR =include
 CC=g++
 CFLAGS=-I$(IDIR)
 
-OUT_DIR=out
+OUT_DIR=build
 IN_DIR=src
 
 _DEPS = rand_norm_matrix.h lanczos_algo.h lag_mult_estimator.h lsqr.h
@@ -22,5 +22,3 @@ $(OUT_DIR)/constrained_lso: $(OBJ)
 
 clean:
 	rm -f $(OUT_DIR)/** 
-
-#*~ core $(INCDIR)/*.o
