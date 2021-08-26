@@ -79,12 +79,12 @@ Eigen::MatrixXd LSQR::SolveForX()
 		* Tests to check if the algorithm reached convergence
 		*****************************************************/
 
-		double gambar = -cs2 *rho;
+		double gamma_bar = -cs2 *rho;
 		double rhs = phi - sn2 * rho * z;
-		double zbar = rhs / gambar;
+		double zbar = rhs / gamma_bar;
 		x_norm = sqrt(xx_norm + zbar * zbar);
-		double gamma = sqrt(gambar* gambar + theta* theta);
-		cs2 = gambar / gamma;
+		double gamma = sqrt(gamma_bar* gamma_bar + theta* theta);
+		cs2 = gamma_bar / gamma;
 		sn2 = theta / gamma;
 		z = rhs / gamma;
 		xx_norm += z * z;

@@ -2,6 +2,9 @@
 #include <fstream>
 #include <iomanip>
 #include <string.h>
+#include <cmath>
+
+#include <time.h>
 
 #include "lanczos_algo.h"
 #include "rand_norm_matrix.h"
@@ -34,6 +37,9 @@ int main(int, char**)
      * Matrix A: A(i, j) has zero mean and variance of 1/ sqrt(num_cols)
      * Vector b: b[i] = sigma * X_i where X_i is unit normal variable
      ******************************************************************************/
+    // Start measuring time
+    clock_t time_0 = clock();
+
     Eigen::MatrixXd mat_a;
     Eigen::VectorXd vec_b(num_rows);
 
@@ -50,16 +56,19 @@ int main(int, char**)
     // deallocating the memmory of the temp array
     delete []temp_array;
 
-
+    // Stop measuring time and calculate the elapsed time
+    clock_t time_1 = clock();
+    double elapsed = double(time_1 - time_0)/CLOCKS_PER_SEC;
+    std::cout << "Time taken for data creation: " << elapsed << " seconds.\n" << std::endl;
 
 
     /******************************************************************************
      * Lanczos Bidiagonalisation Algorithm
      ******************************************************************************/
     Eigen::MatrixXd mat_b;
-    Lanczos lanczos = Lanczos(mat_a, vec_b);
+    int max_k = 5;
+    Lanczos lanczos = Lanczos(mat_a, vec_b, max_k);
     mat_b = lanczos.Solution();
-
 
 
 
@@ -68,24 +77,28 @@ int main(int, char**)
      ******************************************************************************/
     Eigen::MatrixXd L;                                             // stotes the Cholesky decomposition of a matrix
     Eigen::MatrixXd mat_temp;
-    Eigen::MatrixXd mat_u(num_rows, num_cols);                     // Matrix U of size (num_rows X num_cols)
-    Eigen::MatrixXd mat_identity(num_cols, num_cols);     
-    Eigen::MatrixXd mat_u_tilda(num_rows, num_cols);               // Matrix U_tilda of size (num_rows X num_cols)
-    mat_identity.setIdentity();                                    // creates Identity matrix of size (num_cols X num_cols)
-    mat_temp = Eigen::MatrixXd::Zero(num_rows-num_cols,num_cols);  // defines a zero matrix of size (num_rows-num_cols X num_cols) 
+    Eigen::MatrixXd mat_u(num_rows, max_k);                     // Matrix U of size (num_rows X max_k)
+    Eigen::MatrixXd mat_identity(max_k, max_k);     
+    Eigen::MatrixXd mat_u_tilda(num_rows, max_k);               // Matrix U_tilda of size (num_rows X max_k)
+    mat_identity.setIdentity();                                    // creates Identity matrix of size (max_k X max_k)
+    mat_temp = Eigen::MatrixXd::Zero(num_rows-max_k, max_k);  // defines a zero matrix of size (num_rows-max_k X max_k) 
     
     // Cholesky decomposition of (B^T*B-sigma^2 * Identity matrix)
     L = (mat_b.transpose() * mat_b - pow(sigma, 2) * mat_identity).llt().matrixL();
     mat_u.topRows(L.transpose().rows()) = L.transpose();
-    mat_u.bottomRows(mat_temp.rows()) = mat_temp;                   // Appends (num_rows-num_cols X num_cols) zero matrix to U matrix 
+    mat_u.bottomRows(mat_temp.rows()) = mat_temp;                   // Appends (num_rows-max_k X max_k) zero matrix to U matrix 
     
     // creates matrix U_tilda by asigning diagonal elements of Matrix U to zero
     mat_u_tilda = mat_u;
-    for (int j = 0; j < num_cols; j++)
+    for (int j = 0; j < max_k; j++)
     {
         mat_u_tilda(j, j) = 0.0;
     }
 
+    // Stop measuring time and calculate the elapsed time
+    clock_t time_2 = clock();
+    elapsed = double(time_2 - time_1)/CLOCKS_PER_SEC;
+    std::cout << "Time taken for Lanczos algo and cholesky decomposition: " << elapsed << " seconds.\n" << std::endl; 
 
 
 
@@ -94,7 +107,7 @@ int main(int, char**)
      ******************************************************************************/
     int num_k = 1;
     double eps = 1e-8;
-    double lambda_max = 1E2;
+    double lambda_max = 1E4;
     double lambda_step_size = 1E-2;
     double lambda_lk, lambda_uk, lambda_opt;
     double mat_atb_norm = (mat_a.transpose() * vec_b).squaredNorm();
@@ -120,16 +133,21 @@ int main(int, char**)
     std::cout << '\n';
 
 
-
+    // Stop measuring time and calculate the elapsed time
+    clock_t time_3 = clock();
+    elapsed = double(time_3 - time_2)/CLOCKS_PER_SEC;
+    std::cout << "Time taken for finding optimal lambda: " << elapsed << " seconds.\n" << std::endl; 
 
     /******************************************************************************
      * LSQR: Least Square QR Factorisation Algorithm
     ******************************************************************************/
-    Eigen::MatrixXd mat_a_tilda(num_rows+num_cols, num_cols);
+    Eigen::MatrixXd mat_a_tilda(num_rows + num_cols, num_cols);
+    Eigen::MatrixXd mat_i;
+    mat_i.setIdentity(num_cols, num_cols);
     mat_a_tilda.topRows(mat_a.rows()) = mat_a;
-    mat_a_tilda.bottomRows(mat_identity.rows()) = sqrt(lambda_opt) * mat_identity; 
+    mat_a_tilda.bottomRows(mat_i.rows()) = sqrt(lambda_opt) * mat_i; 
 
-    Eigen::VectorXd vec_b_tilda(num_rows+num_cols, 1);
+    Eigen::VectorXd vec_b_tilda(num_rows + num_cols, 1);
     for (int i = 0; i < vec_b_tilda.size(); i++)
     {
         if ( i < num_rows)
@@ -142,12 +160,11 @@ int main(int, char**)
         }
         
     }
-
+    
     // Estiamtion of vec_x using LSQR algorithm
     Eigen::MatrixXd vec_x;
     LSQR lsqr = LSQR(mat_a, vec_b, eps);
     vec_x = lsqr.SolveForX();
-
 
 
 
@@ -162,6 +179,16 @@ int main(int, char**)
     std::cout << "Error estimated by analytical solution: " << std::endl;
     std::cout << 0.5 * pow( (sqrt( ((1.0 * num_rows)/num_cols) * ( 1 + pow(sigma, 2) ) ) - 1 ), 2) << std::endl;
     std::cout << '\n'; 
+
+    // Stop measuring time and calculate the elapsed time
+    clock_t time_4 = clock();
+    elapsed = double(time_4 - time_3)/CLOCKS_PER_SEC;
+    std::cout << "Time taken for computing X: " << elapsed << " seconds.\n" << std::endl; 
+
+
+    // Total time taken to execute the program
+    elapsed = double(time_4 - time_0)/CLOCKS_PER_SEC;
+    std::cout << "Total time taken: " << elapsed << " seconds.\n" << std::endl;  
 
     return 0;
 }
