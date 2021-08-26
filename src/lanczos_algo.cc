@@ -1,13 +1,14 @@
 #include "lanczos_algo.h"
 
 
-Lanczos::Lanczos(const Eigen::MatrixXd &A, const Eigen::VectorXd b)
+Lanczos::Lanczos(const Eigen::MatrixXd &A, const Eigen::VectorXd &b, const int max_k)
 {
     /***************************************
      * Initialize the variables
      ***************************************/
     mat_a = A;
     vec_b = b;
+    this->max_k = max_k;
 
     /* checks if num_rows is atleast 2 and num_cols atleast 1, because
      * generated matrix should satisfy the condition num_rows > num_cols */
@@ -20,14 +21,16 @@ Eigen::MatrixXd Lanczos::Solution()
     //Lanczos bidiagonalization algorithm
     int num_rows = mat_a.rows();
     int num_cols = mat_a.cols();
-    int min_dim = fmin(num_rows, num_cols);
-    int num_of_elements = num_rows*num_cols;
+    //int min_dim = fmin(num_rows, num_cols);
+    int min_dim = max_k;
+    int num_of_elements = (min_dim + 1) * min_dim;
 
     // initialises the intermediate vectors used in the algorithm
     Eigen::VectorXd delta(min_dim);
     Eigen::VectorXd gamma(min_dim);
     Eigen::VectorXd vec_p(num_rows);
     Eigen::VectorXd vec_q(num_cols);
+    vec_q.setZero();
     Eigen::VectorXd vec_w_even(num_rows);
     Eigen::VectorXd vec_w_odd(num_cols);
     
@@ -79,15 +82,14 @@ Eigen::MatrixXd Lanczos::Solution()
 
     }while(flag);
 
-    
     double* data = new double[(int) num_of_elements];
 
     /* creates 1D array that can be transformed into a 2D lower bidiagonal matrix 
      * from gamma and delta vectors */
     k = 0;    // counter keeps track of the location of element stored in 1-D array
-    for (int i = 0; i < num_cols; i++)
+    for (int j = 0; j < min_dim; j++)
     {
-        for (int j = 0; j < num_cols; j++)
+        for (int i = 0; i <= min_dim; i++)
         {
             if (i == j)
             {
@@ -106,7 +108,7 @@ Eigen::MatrixXd Lanczos::Solution()
     }
 
     // creates a 2D matrix by mapping 1D array using Map() functio
-    Eigen::Map<Eigen::MatrixXd> mat_b(data, num_cols, num_cols);
+    Eigen::Map<Eigen::MatrixXd> mat_b(data, (min_dim + 1), min_dim);
 
     return mat_b;
 }

@@ -12,7 +12,7 @@
 class Lanczos{
  public:
   //Overload constructor
-  Lanczos(const Eigen::MatrixXd &A, const Eigen::VectorXd b);
+  Lanczos(const Eigen::MatrixXd &A, const Eigen::VectorXd &b, const int max_k);
 
   // member function that implements Lanczos matrix bidiagonalization algorithm
   Eigen::MatrixXd Solution();
@@ -21,6 +21,8 @@ class Lanczos{
   Eigen::MatrixXd mat_b;
   Eigen::MatrixXd mat_a;
   Eigen::VectorXd vec_b;
+
+  int max_k;
 };
 
 
