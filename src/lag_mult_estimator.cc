@@ -59,22 +59,6 @@ double LagMultEstimator::FindOptimalLambda(double lambda_max, const int k, const
         lambda_end = lambda_max;
     }
 
-    // check if function value is outside the lower limit of lambda, if so through an error and exit
-    if ( this->EstimateFunctionValue(k, lambda_start) < target_func_val )
-    {
-        return std::numeric_limits<double>::quiet_NaN();
-    }
-
-    // If the function value at lambda_min or lambda_max matches the target value return the lambda value
-    if ( this->EstimateFunctionValue(k, lambda_start) == target_func_val )
-    {
-        return lambda_start;
-    }
-
-    if ( this->EstimateFunctionValue(k, lambda_end) == target_func_val )
-    {
-        return lambda_end;
-    }
 
     /* implements the binary search algorithm to find the lambda value
      * corresponds to target function value */
@@ -84,7 +68,7 @@ double LagMultEstimator::FindOptimalLambda(double lambda_max, const int k, const
     {
         lambda_mid = ( lambda_start + lambda_end ) / 2.0;
 
-        if ( this->EstimateFunctionValue(k, lambda_mid) > target_func_val)
+        if ( target_func_val < this->EstimateFunctionValue(k, lambda_mid))
         {
             lambda_start = lambda_mid;
         }
