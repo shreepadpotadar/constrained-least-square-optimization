@@ -22,7 +22,7 @@ Eigen::MatrixXd LSQR::SolveForX()
 	/***********************
 	* Variables initialisation
 	************************/
-    vec_x.setZero(mat_a.cols(), 1);
+	vec_x.setZero(mat_a.cols(), 1);
 	double beta = vec_b.norm();
 	Eigen::VectorXd vec_u = vec_b / beta;
 	Eigen::VectorXd temp_vec = mat_a.transpose() * vec_u;
@@ -36,7 +36,7 @@ Eigen::MatrixXd LSQR::SolveForX()
 	/*************************************************************
 	* Initialisation of variables used for the test of convergence
 	**************************************************************/
-    double z = 0;
+	double z = 0;
 	double cs2 = -1;
 	double sn2 = 0;
 	double dd_norm = 0;
