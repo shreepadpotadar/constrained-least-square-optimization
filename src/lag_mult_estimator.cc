@@ -49,7 +49,7 @@ double LagMultEstimator::FindOptimalLambda(double lambda_max, const int k, const
     // defines the lambda parameteres
     double lambda_start = - pow(sigma, 2); 
     double lambda_end = lambda_max;
-    double target_func_val = - lambda_start;
+    double target_func_val = mat_u.cols();
 
     // checks if target is beyond the max lambda range. If so, it increases by 2 fold
     // TO DO: implements this logic inside do-while loop 
