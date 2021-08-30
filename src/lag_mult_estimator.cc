@@ -1,6 +1,6 @@
 //#include "stdafx.h"
-#include <fstream>
 #include "lag_mult_estimator.h"
+#include <iostream>
 
 LagMultEstimator::LagMultEstimator( const Eigen::MatrixXd &U, const double s, const double atb )
 {
@@ -17,6 +17,10 @@ LagMultEstimator::LagMultEstimator( const Eigen::MatrixXd &U, const double s, co
 double LagMultEstimator::EstimateFunctionValue( const int k, const double lambda )
 {
     // check if k is not greater than the num_cols of matrix U
+    if (k > mat_u.cols())
+    {
+        std::cout << "K value is :" << k << std::endl;
+    }
     assert( k <= mat_u.cols() );
 
     Eigen::MatrixXd mat_z(k, k);
@@ -44,16 +48,41 @@ double LagMultEstimator::EstimateFunctionValue( const int k, const double lambda
     return mat_atb_norm * basis_vec.transpose() * mat_z * mat_z * basis_vec;
 }
 
-double LagMultEstimator::FindOptimalLambda(double lambda_max, const int k, const double lambda_step, const double eps)
+double LagMultEstimator::FindOptimalLambda(double lambda_max, const double lambda_step, const double eps)
 {
     // defines the lambda parameteres
+    int k = 1;
+    int num_k;
+    bool flag = true;
     double lambda_start = - pow(sigma, 2); 
     double lambda_end = lambda_max;
     double target_func_val = mat_u.cols();
 
+    // Find lower value for num_k
+    do{
+        if (this->EstimateFunctionValue(k, lambda_start) >= target_func_val)
+        {
+            num_k = k;
+            flag = false;
+        }
+        
+        k++;
+
+        if ( k > mat_u.cols())
+        {
+            num_k = mat_u.cols();
+            flag = false;
+        }
+    }while(flag);
+
+    if (num_k == 1)
+    {
+        num_k = 2;
+    }
+
     // checks if target is beyond the max lambda range. If so, it increases by 2 fold
     // TO DO: implements this logic inside do-while loop 
-    if ( this->EstimateFunctionValue(k, lambda_end) > target_func_val )
+    if ( this->EstimateFunctionValue(num_k, lambda_end) > target_func_val )
     {
         lambda_max = 2 * lambda_max;
         lambda_end = lambda_max;
@@ -68,7 +97,7 @@ double LagMultEstimator::FindOptimalLambda(double lambda_max, const int k, const
     {
         lambda_mid = ( lambda_start + lambda_end ) / 2.0;
 
-        if ( target_func_val < this->EstimateFunctionValue(k, lambda_mid))
+        if ( target_func_val < this->EstimateFunctionValue(num_k, lambda_mid))
         {
             lambda_start = lambda_mid;
         }

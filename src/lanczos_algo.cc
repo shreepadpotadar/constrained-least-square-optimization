@@ -77,38 +77,33 @@ Eigen::MatrixXd Lanczos::Solution()
                 flag = false;
             }
         }
-    
         i++;
 
     }while(flag);
 
-    double* data = new double[(int) num_of_elements];
 
-    /* creates 1D array that can be transformed into a 2D lower bidiagonal matrix 
+    /* creates 2D lower bidiagonal matrix 
      * from gamma and delta vectors */
-    k = 0;    // counter keeps track of the location of element stored in 1-D array
-    for (int j = 0; j < min_dim; j++)
+    Eigen::MatrixXd mat_b((min_dim + 1), min_dim);
+    for (int i = 0; i <= min_dim; i++)
     {
-        for (int i = 0; i <= min_dim; i++)
+        for (int j = 0; j < min_dim; j++)
         {
             if (i == j)
             {
-                data[k] = gamma[i];
+                mat_b(i, j) = gamma[i];
             }
             else if (i == j + 1)
             {
-                data[k] = delta[j];
+                mat_b(i, j) = delta[j];
             }
             else
             {
-                data[k] = 0.0;
+                mat_b(i, j)  = 0.0;
             }
             k++;
         }
     }
-
-    // creates a 2D matrix by mapping 1D array using Map() functio
-    Eigen::Map<Eigen::MatrixXd> mat_b(data, (min_dim + 1), min_dim);
 
     return mat_b;
 }
