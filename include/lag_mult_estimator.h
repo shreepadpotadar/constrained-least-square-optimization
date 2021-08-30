@@ -16,7 +16,7 @@ class LagMultEstimator{
 
   double EstimateFunctionValue( const int k, const double lambda );
 
-  double FindOptimalLambda( double max_lambda, const int k, const double lambda_step, const double eps );
+  double FindOptimalLambda( double max_lambda, const double lambda_step, const double eps );
 
   Eigen::MatrixXd mat_u;
   double sigma;
