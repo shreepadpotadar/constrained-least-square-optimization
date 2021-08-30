@@ -66,10 +66,9 @@ int main(int, char**)
      * Lanczos Bidiagonalisation Algorithm
      ******************************************************************************/
     Eigen::MatrixXd mat_b;
-    int max_k = 5;
+    int max_k = num_cols;
     Lanczos lanczos = Lanczos(mat_a, vec_b, max_k);
     mat_b = lanczos.Solution();
-
 
 
     /*******************************************************************************
@@ -114,22 +113,8 @@ int main(int, char**)
 
     // Computes the lower limit of the Lagrange multiplier lambda of cost function
     LagMultEstimator lag_low = LagMultEstimator(mat_u, sigma, mat_atb_norm);
-    lambda_lk = lag_low.FindOptimalLambda(lambda_max, num_k, lambda_step_size, eps);
-    std::cout << "Lower limit of the Lagrange multiplier: " << lambda_lk << std::endl;
-    std::cout << '\n';
-
-    // Computes the higher limit of the Lagrange multiplier lambda of cost function
-    LagMultEstimator lag_high = LagMultEstimator(mat_u_tilda, sigma, mat_atb_norm);
-    lambda_uk = lag_high.FindOptimalLambda(lambda_max, num_k, lambda_step_size, eps);
-    std::cout << "Upper limit of the Lagrange multiplier: " << lambda_uk << std::endl;
-    std::cout << '\n';
-
-    // Computes the optimium of the Lagrange multiplier lambda of cost function
-    num_k = 2;
-    lambda_step_size = 1E-4;
-    LagMultEstimator lag_optim = LagMultEstimator(mat_u, sigma, mat_atb_norm);
-    lambda_opt = lag_optim.FindOptimalLambda(lambda_max, num_k, lambda_step_size, eps);
-    std::cout << "Optimum value of the Lagrange multiplier: " << lambda_opt << std::endl;
+    lambda_opt = lag_low.FindOptimalLambda(lambda_max, lambda_step_size, eps);
+    std::cout << "Lower limit of the Lagrange multiplier: " << lambda_opt << std::endl;
     std::cout << '\n';
 
 
@@ -137,6 +122,7 @@ int main(int, char**)
     clock_t time_3 = clock();
     elapsed = double(time_3 - time_2)/CLOCKS_PER_SEC;
     std::cout << "Time taken for finding optimal lambda: " << elapsed << " seconds.\n" << std::endl; 
+
 
     /******************************************************************************
      * LSQR: Least Square QR Factorisation Algorithm
