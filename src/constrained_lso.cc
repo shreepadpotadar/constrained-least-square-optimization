@@ -21,15 +21,71 @@ int main(int, char**)
     int num_rows;
     int num_cols;
     double sigma;
-    std::cout << "Enter the number of rows: " << std::endl;
-    std::cin >> num_rows;
-    std::cout << "Enter the number of columns: " << std::endl;
-    std::cin >> num_cols;
-    std::cout << "Enter the value of sigma: " << std::endl;
-    std::cin >> sigma;
+    while(true)
+    {
+        std::cout << "Enter the number of rows: " << std::endl;
+        std::cin >> num_rows;
+        if (std::cin.fail())
+        {
+            // get rid of failure state
+            std::cin.clear(); 
+            // discard 'bad' character(s) 
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Enter the correct input" << std::endl;
+        }
+        else if (num_rows > 2)
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "You have entered the incorrect num_rows" << std::endl;
+        }
+    }
+
+    while(true)
+    {
+        std::cout << "Enter the number of columns: " << std::endl;
+        std::cin >> num_cols;
+        if (std::cin.fail())
+        {
+            // get rid of failure state
+            std::cin.clear(); 
+            // discard 'bad' character(s) 
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Enter the correct input" << std::endl;
+        }
+        else if (num_cols <= num_rows & num_cols > 1)
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "You have entered the incorrect num_cols" << std::endl;
+        }
+    };
+    while(true)
+    {
+        std::cout << "Enter the value of sigma: " << std::endl;
+        std::cin >> sigma;
+        if (std::cin.fail())
+        {
+            // get rid of failure state
+            std::cin.clear(); 
+            // discard 'bad' character(s) 
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Enter the correct input" << std::endl;
+        }
+        else if (sigma > 0)
+        {
+            break;
+        }
+        else
+        {
+            std::cout << "You have entered the incorrect sigma" << std::endl;
+        }
+    };;
     std::cout << '\n';
-
-
 
     
     /******************************************************************************
@@ -66,7 +122,7 @@ int main(int, char**)
      * Lanczos Bidiagonalisation Algorithm
      ******************************************************************************/
     Eigen::MatrixXd mat_b;
-    int max_k = num_cols;
+    int max_k = 2;
     Lanczos lanczos = Lanczos(mat_a, vec_b, max_k);
     mat_b = lanczos.Solution();
 
@@ -106,15 +162,27 @@ int main(int, char**)
      ******************************************************************************/
     int num_k = 1;
     double eps = 1e-8;
-    double lambda_max = 1E4;
+    double lambda_max = 1E2;
     double lambda_step_size = 1E-2;
     double lambda_lk, lambda_uk, lambda_opt;
     double mat_atb_norm = (mat_a.transpose() * vec_b).squaredNorm();
 
     // Computes the lower limit of the Lagrange multiplier lambda of cost function
     LagMultEstimator lag_low = LagMultEstimator(mat_u, sigma, mat_atb_norm);
-    lambda_opt = lag_low.FindOptimalLambda(lambda_max, lambda_step_size, eps);
-    std::cout << "Lower limit of the Lagrange multiplier: " << lambda_opt << std::endl;
+    lambda_lk = lag_low.FindOptimalLambda(lambda_max, lambda_step_size, eps);
+    std::cout << "Lower limit of the Lagrange multiplier: " << lambda_lk << std::endl;
+    std::cout << '\n';
+
+    if (lambda_lk <= 0)
+    {
+        std::cout << "The value of sigma is outside the range. That resulted into negatve lagrange multiplier.\nHence, Can not find the X"  << std::endl;
+        return 0;
+    }
+ 
+    // Computes the lower limit of the Lagrange multiplier lambda of cost function
+    LagMultEstimator lag_high = LagMultEstimator(mat_u_tilda, sigma, mat_atb_norm);
+    lambda_uk = lag_high.FindOptimalLambda(lambda_max, lambda_step_size, eps);
+    std::cout << "Upper limit of the Lagrange multiplier: " << lambda_uk << std::endl;
     std::cout << '\n';
 
 
@@ -131,7 +199,7 @@ int main(int, char**)
     Eigen::MatrixXd mat_i;
     mat_i.setIdentity(num_cols, num_cols);
     mat_a_tilda.topRows(mat_a.rows()) = mat_a;
-    mat_a_tilda.bottomRows(mat_i.rows()) = sqrt(lambda_opt) * mat_i; 
+    mat_a_tilda.bottomRows(mat_i.rows()) = sqrt(lambda_lk) * mat_i; 
 
     Eigen::VectorXd vec_b_tilda(num_rows + num_cols, 1);
     for (int i = 0; i < vec_b_tilda.size(); i++)
@@ -147,9 +215,10 @@ int main(int, char**)
         
     }
     
+
     // Estiamtion of vec_x using LSQR algorithm
     Eigen::MatrixXd vec_x;
-    LSQR lsqr = LSQR(mat_a, vec_b, eps);
+    LSQR lsqr = LSQR(mat_a_tilda, vec_b_tilda, eps);
     vec_x = lsqr.SolveForX();
 
 
