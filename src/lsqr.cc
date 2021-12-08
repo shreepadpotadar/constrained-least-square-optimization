@@ -3,7 +3,9 @@
 
 #include "lsqr.h"
 
-
+/* Few of the code blocks mentioned below are taken from open source git repo
+* https://github.com/harusametime/LSQRwithEigen/blob/master/LSQR.cpp
+/
 
 LSQR::LSQR(const Eigen::MatrixXd &A, const Eigen::VectorXd &b, const double eps)
 {
